@@ -90,6 +90,11 @@ workflows:
       - build-go-executables:
           requires:
             - test-go
+            -
+  tag-on-master:
+    jobs:
+      - tag_on_master:
+
     # - deploy:
     #     requires:
     #       - build-go-executables
