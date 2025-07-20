@@ -54,15 +54,37 @@ jobs:
       - store_artifacts:
           path: ~/artifacts
           destination: executables
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
-      - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+  tag_on_master:
+    tag_on_master:
+      executor: default
+      steps:
+        - checkout
+        - run:
+            name: Get latest tag
+            command: |
+              git fetch --tags
+              latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+              echo "Latest tag: $latest_tag"
+              # Increment patch version
+              if [[ $latest_tag =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                major=${BASH_REMATCH[1]}
+                minor=${BASH_REMATCH[2]}
+                patch=${BASH_REMATCH[3]}
+                new_tag="v$major.$minor.$((patch+1))"
+              else
+                new_tag="v1.0.0"
+              fi
+              echo "New tag: $new_tag"
+              echo $new_tag > new_tag.txt
+
+        - run:
+            name: Create Git Tag and Push
+            command: |
+              new_tag=$(cat new_tag.txt)
+              git config user.name "circleci"
+              git config user.email "circleci@circleci.com"
+              git tag $new_tag
+              git push https://$GH_TOKEN@github.com/<your-username>/<your-repo>.git $new_tag
 workflows:
   build-and-test:
     jobs:
