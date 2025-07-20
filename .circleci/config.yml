@@ -61,7 +61,7 @@ jobs:
           path: ~/artifacts
           destination: executables
 
-  tag_on_master:
+  tag_on_main:
     executor: default
     steps:
       - checkout
@@ -98,9 +98,9 @@ workflows:
           requires:
             - test-go
 
-  tag-on-master:
+  tag-on-main:
     jobs:
-      - tag_on_master:
+      - tag_on_main:
           filters:
             branches:
-              only: master
+              only: main
